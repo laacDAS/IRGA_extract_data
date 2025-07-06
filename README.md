@@ -39,3 +39,9 @@ Este projeto foi criado para facilitar a rotina de pesquisadores e técnicos que
 
 - Código aberto e personalizável.
 - Compatível com Windows.
+
+## Links externos e referências
+- [Support: LI-6400/XT Portable Photosynthesis System](https://www.licor.com/support/LI-6400/topics/system-description.html)
+- [Support: LI-6800 Portable Photosynthesis System](https://www.licor.com/support/LI-6800/topics/matching-the-analyzers.html)
+- [Python CSV Module](https://docs.python.org/3/library/csv.html)
+- [Tkinter Documentation](https://docs.python.org/3/library/tkinter.html)
