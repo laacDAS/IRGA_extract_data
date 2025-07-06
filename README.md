@@ -1,4 +1,4 @@
-# IRGA_extract_data 🌱📊
+# IRGA Extract Data 🌱📊
 
 Um utilitário para extração e organização de dados de arquivos CSV exportados de equipamento LI-COR Infrared Gas Analyzer (IRGA), com interface gráfica amigável.
 
