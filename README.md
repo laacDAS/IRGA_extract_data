@@ -12,6 +12,34 @@ Um utilitário para extração e organização de dados de arquivos CSV exportad
 - Relatório ao final do processamento com número de linhas extraídas por arquivo.
 - Acesso rápido à pasta de saída.
 
+## 🛠️ Instalação e requisitos
+
+- **Python:** O projeto foi desenvolvido e testado com Python 3.11+.
+- **Dependências:**
+  - ttkbootstrap
+
+### Instale o Python
+
+Baixe e instale o Python em: [python.org/downloads](https://www.python.org/downloads/)
+
+Durante a instalação, marque a opção **Add Python to PATH**.
+
+### Instale as dependências
+
+Abra o terminal na pasta do projeto e execute:
+
+```
+pip install ttkbootstrap
+```
+
+Se desejar, crie um ambiente virtual antes:
+
+```
+python -m venv venv
+venv\Scripts\activate  # Windows
+pip install ttkbootstrap
+```
+
 ## 🚀 Como usar
 
 1️⃣ **Salve os arquivos exportados do IRGA** na pasta `dados`. O arquivo de saída será salvo automaticamente na pasta `saida` após o processamento.
@@ -33,6 +61,7 @@ Um utilitário para extração e organização de dados de arquivos CSV exportad
 
 5️⃣ Use o botão **Abrir pasta de saída** para acessar rapidamente os arquivos processados.
 
+
 ## 💡 Sobre o projeto
 
 Este projeto foi criado para facilitar a rotina de pesquisadores e técnicos que trabalham com dados de trocas gasosas em plantas, especialmente o modelo da LI-COR, automatizando a limpeza e organização dos arquivos gerados pelo IRGA. A interface foi pensada para ser simples e eficiente.
@@ -40,7 +69,7 @@ Este projeto foi criado para facilitar a rotina de pesquisadores e técnicos que
 - Código aberto e personalizável.
 - Compatível com Windows.
 
-## Links externos e referências
+## 🔗 Links externos e referências
 - [Support: LI-6400/XT Portable Photosynthesis System](https://www.licor.com/support/LI-6400/topics/system-description.html)
 - [Support: LI-6800 Portable Photosynthesis System](https://www.licor.com/support/LI-6800/topics/matching-the-analyzers.html)
 - [Python CSV Module](https://docs.python.org/3/library/csv.html)
