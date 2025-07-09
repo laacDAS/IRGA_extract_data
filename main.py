@@ -102,9 +102,12 @@ class ExtratorApp(tb.Window):
             lbl.pack(side='left', fill=tb.X, expand=True, padx=(0, 5), pady=2)
             lbl.bind("<Button-1>", lambda e,
                      arq=arquivo: abrir_arquivo_csv(arq))
-            entry = tb.Entry(row_frame, width=18, font=("Segoe UI", 10))
+            entry = tb.Entry(row_frame, width=28, font=("Segoe UI", 10))
             entry.insert(0, "trat")
             entry.pack(side='left', padx=(0, 5), pady=2)
+            # Balão de dica para múltiplas chaves
+            self._add_tooltip(
+                entry, "Separe múltiplos tratamentos por vírgula, ex: trat1, trat2")
             # Botão X para remover arquivo
             btn_remover = tb.Button(row_frame, text="✕", width=2, bootstyle=DANGER,
                                     command=lambda i=idx: self.remover_arquivo(i))
@@ -117,6 +120,30 @@ class ExtratorApp(tb.Window):
         self.frame_arquivos.update_idletasks()
         self.geometry("")
         self._center_window()
+
+    def _add_tooltip(self, widget, text):
+        # Balão de dica simples para widgets Tkinter/ttkbootstrap
+        def on_enter(event):
+            self.tooltip = tk.Toplevel(widget)
+            self.tooltip.wm_overrideredirect(True)
+            x = widget.winfo_rootx() + 20
+            y = widget.winfo_rooty() + widget.winfo_height() + 5
+            self.tooltip.wm_geometry(f"+{x}+{y}")
+            label = tk.Label(self.tooltip, text=text, background="#ffffe0", relief='solid', borderwidth=1,
+                             font=("Segoe UI", 9), padx=6, pady=2)
+            label.pack()
+            # Fecha o balão após 3 segundos
+            self.tooltip.after(3000, lambda: self._close_tooltip())
+
+        def on_leave(event):
+            self._close_tooltip()
+        widget.bind("<Enter>", on_enter)
+        widget.bind("<Leave>", on_leave)
+
+    def _close_tooltip(self):
+        if hasattr(self, 'tooltip') and self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None
 
     def remover_arquivo(self, idx):
         if 0 <= idx < len(self.arquivos):
@@ -136,10 +163,15 @@ class ExtratorApp(tb.Window):
             chave = entry.get().strip()
             if not chave:
                 chave = "trat"
+            # Permite múltiplas chaves separadas por vírgula
+            if ',' in chave:
+                chaves = [c.strip() for c in chave.split(',') if c.strip()]
+            else:
+                chaves = chave
             nome = os.path.splitext(os.path.basename(arquivo))[0]
             ext = os.path.splitext(arquivo)[1]
             saida = os.path.join(pasta_saida, f"{nome}_extraido{ext}")
-            linhas = extrair_dados_irga_csv(arquivo, saida, chave)
+            linhas = extrair_dados_irga_csv(arquivo, saida, chaves)
             resultados.append(
                 f"{os.path.basename(saida)}: {linhas} linhas extraídas")
         messagebox.showinfo("Processamento concluído", "\n".join(resultados))
