@@ -2,7 +2,7 @@ import os
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
-from functions import extrair_dados_irga_csv
+from functions import extrair_dados_irga
 import subprocess
 import tkinter as tk
 
@@ -47,10 +47,22 @@ class ExtratorApp(tb.Window):
         self.arquivos = []
         self.entries = []
         self.labels = []
+        self.colunas_padrao = ["Tratamento", "Obs", "HHMMSS"]
+        self.colunas_possiveis = [
+            "FTime", "EBal?", "Photo", "Cond", "Ci", "Trmmol", "VpdL", "CTleaf", "Area", "BLC_1", "StmRat", "BLCond", "Tair", "Tleaf", "TBlk", "CO2R", "CO2S", "H2OR", "H2OS", "RH_R", "RH_S", "Flow", "PARi", "PARo", "Press", "CsMch", "HsMch", "StableF", "BLCslope", "BLCoffst", "f_parin", "f_parout", "alphaK", "Status", "fda", "Trans", "Tair_K", "Twall_K", "R(W/m2)", "Tl-Ta", "SVTleaf", "h2o_i", "h20diff", "CTair", "SVTair", "CndTotal", "vp_kPa", "VpdA", "CndCO2", "Ci_Pa", "Ci/Ca", "RHsfc", "C2sfc", "AHs/Cs"
+        ]
+        self.check_vars = []
         # Botão de selecionar arquivos no topo
         btn_arquivos = tb.Button(frame, text="Selecionar Arquivos", width=22, bootstyle=PRIMARY,
                                  command=self.selecionar_arquivos)
         btn_arquivos.pack(pady=(0, 10))
+        # Espaço para seleção de variáveis
+        self.lbl_vars = tb.Label(
+            frame, text="Selecione as variáveis a exportar:", font=("Segoe UI", 10, "bold"))
+        self.vars_frame = tb.Frame(frame)
+        # Não exibe inicialmente
+        self.lbl_vars.pack_forget()
+        self.vars_frame.pack_forget()
         # Títulos das colunas
         col_frame = tb.Frame(frame)
         col_frame.pack(fill=tb.X, pady=(0, 0))
@@ -64,10 +76,11 @@ class ExtratorApp(tb.Window):
         col_frame.grid_columnconfigure(0, weight=2)
         col_frame.grid_columnconfigure(1, weight=1)
         # Tabela de arquivos
-        tabela_frame = tb.Frame(frame, bootstyle="secondary")
+        tabela_frame = tb.Frame(frame)  # Removido bootstyle="secondary"
         tabela_frame.pack(fill=tb.BOTH, expand=True, pady=(0, 10), padx=0)
         self.tabela_frame = tabela_frame
-        self.frame_arquivos = tb.Frame(tabela_frame, bootstyle="secondary")
+        # Removido bootstyle="secondary"
+        self.frame_arquivos = tb.Frame(tabela_frame)
         self.frame_arquivos.pack(fill=tb.BOTH, expand=True, padx=1, pady=1)
         # Botões embaixo
         btns_frame = tb.Frame(frame)
@@ -82,11 +95,72 @@ class ExtratorApp(tb.Window):
     def selecionar_arquivos(self):
         arquivos = filedialog.askopenfilenames(
             title="Selecione um ou mais arquivos CSV de entrada",
-            filetypes=[("Arquivos CSV", "*.csv")]
+            filetypes=[
+                ("Arquivos CSV", "*.csv")
+            ]
         )
         if arquivos:
             self.arquivos = list(arquivos)
+            self._atualizar_checkboxes_colunas()
             self.atualizar_campos_arquivos()
+
+    def _atualizar_checkboxes_colunas(self):
+        self.lbl_vars.pack(anchor="w", pady=(0, 2))
+        self.vars_frame.pack(fill=tb.X, pady=(0, 10))
+        for widget in self.vars_frame.winfo_children():
+            widget.destroy()
+        colunas_encontradas = []
+        tipos_colunas = []
+        for arquivo in self.arquivos:
+            try:
+                with open(arquivo, encoding='utf-8') as f:
+                    import csv
+                    reader = csv.reader(f)
+                    header = None
+                    tipo = None
+                    for row in reader:
+                        if row and row[0].strip().lower().startswith('obs'):
+                            header = row
+                        elif header and not tipo and any(cell.strip().lower() in ['in', 'out'] for cell in row):
+                            tipo = row
+                            break
+                    if header:
+                        colunas_encontradas = header
+                        if tipo:
+                            tipos_colunas = tipo
+                        break
+            except Exception:
+                continue
+        colunas_padrao = ["Tratamento", "Obs", "HHMMSS"]
+        colunas_opcionais = [
+            c for c in colunas_encontradas if c not in colunas_padrao]
+        # Organiza por tipo (in/out)
+        in_vars = [c for c, t in zip(colunas_encontradas, tipos_colunas) if t.strip(
+        ).lower() == 'in' and c not in colunas_padrao]
+        out_vars = [c for c, t in zip(colunas_encontradas, tipos_colunas) if t.strip(
+        ).lower() == 'out' and c not in colunas_padrao]
+        self.colunas_padrao = colunas_padrao
+        self.colunas_possiveis = in_vars + out_vars
+        self.check_vars = []
+        # Cria frames separados para in/out (layout vertical)
+        in_frame = tb.LabelFrame(self.vars_frame, text='Variáveis IN')
+        in_frame.pack(fill=tb.X, expand=True, padx=8, pady=(0, 4))
+        out_frame = tb.LabelFrame(self.vars_frame, text='Variáveis OUT')
+        out_frame.pack(fill=tb.X, expand=True, padx=8, pady=(0, 4))
+        for i, var in enumerate(in_vars):
+            var_chk = tk.IntVar(value=-1)
+            chk = tb.Checkbutton(in_frame, text=var,
+                                 variable=var_chk, bootstyle=INFO)
+            chk.state(['alternate'])
+            chk.grid(row=i//8, column=i % 8, sticky="w", padx=2, pady=1)
+            self.check_vars.append((var, var_chk))
+        for i, var in enumerate(out_vars):
+            var_chk = tk.IntVar(value=-1)
+            chk = tb.Checkbutton(out_frame, text=var,
+                                 variable=var_chk, bootstyle=INFO)
+            chk.state(['alternate'])
+            chk.grid(row=i//8, column=i % 8, sticky="w", padx=2, pady=1)
+            self.check_vars.append((var, var_chk))
 
     def atualizar_campos_arquivos(self):
         for widget in self.frame_arquivos.winfo_children():
@@ -159,6 +233,13 @@ class ExtratorApp(tb.Window):
         pasta_saida = os.path.join(pasta_base, "saida")
         os.makedirs(pasta_saida, exist_ok=True)
         resultados = []
+        # Coleta variáveis selecionadas
+        colunas_selecionadas = [var for var,
+                                var_chk in self.check_vars if var_chk.get()]
+        if colunas_selecionadas:
+            colunas_exportar = self.colunas_padrao + colunas_selecionadas
+        else:
+            colunas_exportar = None  # Exporta todas se nada selecionado
         for arquivo, entry in zip(self.arquivos, self.entries):
             chave = entry.get().strip()
             if not chave:
@@ -171,7 +252,8 @@ class ExtratorApp(tb.Window):
             nome = os.path.splitext(os.path.basename(arquivo))[0]
             ext = os.path.splitext(arquivo)[1]
             saida = os.path.join(pasta_saida, f"{nome}_extraido{ext}")
-            linhas = extrair_dados_irga_csv(arquivo, saida, chaves)
+            linhas = extrair_dados_irga(
+                arquivo, saida, chaves, colunas_exportar)
             resultados.append(
                 f"{os.path.basename(saida)}: {linhas} linhas extraídas")
         messagebox.showinfo("Processamento concluído", "\n".join(resultados))

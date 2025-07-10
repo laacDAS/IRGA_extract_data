@@ -2,6 +2,13 @@
 
 Um utilitário para extração e organização de dados de arquivos CSV exportados de equipamento LI-COR Infrared Gas Analyzer (IRGA), com interface gráfica amigável.
 
+## ⚠️ **Atenção**: Este projeto é uma versão inicial e pode conter bugs. Use com cautela e contribua com melhorias!
+
+## 🚨 **Observações Importantes**: 
+
+1. As manipulações, como área foliar, devem ser feitas se necessário no arquivo ``.xlsx`` ou ``.xls`` antes de exportar como CSV para entrar no programa. 
+2. Ao trabalhar com Autolog + ETR, idealmente faça o pico de fluorescência antes das leituras para que sejam adicionadas as medidas de forma correta nas leituras posteriores. O programa ainda não corrige para leituras prévias à leitura de pico de fluorescência.
+
 ## ✨ Funcionalidades
 
 - Interface gráfica intuitiva para seleção, visualização e remoção de arquivos.
